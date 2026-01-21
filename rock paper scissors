@@ -1,0 +1,99 @@
+rps.py
+import random
+import time
+
+basic_choices = ["rock", "paper", "scissors"]
+advanced_choices = ["rock", "paper", "scissors", "lizard", "spock"]
+
+def determine_winner(player, computer, use_advanced=False):
+    if player == computer:
+        return "tie"
+
+    if use_advanced:
+        win_map = {
+            "rock": ["scissors", "lizard"],
+            "paper": ["rock", "spock"],
+            "scissors": ["paper", "lizard"],
+            "lizard": ["spock", "paper"],
+            "spock": ["scissors", "rock"]
+        }
+    else:
+        win_map = {
+            "rock": ["scissors"],
+            "paper": ["rock"],
+            "scissors": ["paper"]
+        }
+
+    if computer in win_map[player]:
+        return "player"
+    else:
+        return "computer"
+
+def play_game():
+    print("Welcome to Rock-Paper-Scissors!")
+    mode = input("Do you want basic or advanced mode? (basic/advanced): ").lower()
+
+    if mode == "advanced":
+        choices = advanced_choices
+        use_advanced = True
+        print("Advanced mode selected: Rock, Paper, Scissors, Lizard, Spock!")
+    else:
+        choices = basic_choices
+        use_advanced = False
+        print("Basic mode selected: Rock, Paper, Scissors!")
+
+    rounds_played = 0
+    player_score = 0
+    computer_score = 0
+
+    while True:
+        print("\n--- Round", rounds_played + 1, "---")
+        player_choice = input(
+            f"Choose {', '.join(choices)} (or 'quit' to exit): "
+        ).lower()
+
+        if player_choice == "quit":
+            print("Exiting game...")
+            break
+
+        if player_choice not in choices:
+            print("Invalid choice, try again!")
+            continue
+
+        computer_choice = random.choice(choices)
+        print(f"Computer chose: {computer_choice}")
+        time.sleep(0.5)
+
+        result = determine_winner(player_choice, computer_choice, use_advanced)
+
+        if result == "tie":
+            print("It's a tie!")
+        elif result == "player":
+            print("You win this round!")
+            player_score += 1
+        else:
+            print("Computer wins this round!")
+            computer_score += 1
+
+        rounds_played += 1
+        print(f"Score -> You: {player_score} | Computer: {computer_score}")
+
+        if rounds_played % 3 == 0:
+            cont = input("Do you want to continue playing? (yes/no): ").lower()
+            if cont != "yes":
+                break
+
+    print("\n--- Game Over ---")
+    print(f"Total rounds played: {rounds_played}")
+    print(f"Your score: {player_score}")
+    print(f"Computer score: {computer_score}")
+
+    if player_score > computer_score:
+        print("You won the game! Congrats!")
+    elif player_score < computer_score:
+        print("Computer won the game! Better luck next time!")
+    else:
+        print("The game ended in a tie!")
+
+if __name__ == "__main__":
+    play_game()
