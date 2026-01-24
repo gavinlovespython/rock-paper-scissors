@@ -1,99 +1,110 @@
-rps.py
 import random
 import time
 
-basic_choices = ["rock", "paper", "scissors"]
-advanced_choices = ["rock", "paper", "scissors", "lizard", "spock"]
+VALID_INPUTS = {
+    "r": "rock",
+    "rock": "rock",
+    "p": "paper",
+    "paper": "paper",
+    "s": "scissors",
+    "scissors": "scissors"
+}
 
-def determine_winner(player, computer, use_advanced=False):
+WIN_MAP = {
+    "rock": ["scissors"],
+    "paper": ["rock"],
+    "scissors": ["paper"]
+}
+
+def normalize_input(user_input):
+    return VALID_INPUTS.get(user_input.strip().lower())
+
+def get_computer_choice(difficulty, player_last_move=None):
+    if difficulty == "easy" or player_last_move is None:
+        return random.choice(list(WIN_MAP.keys()))
+
+    if difficulty == "medium":
+        if random.random() < 0.6:
+            return counter_move(player_last_move)
+        return random.choice(list(WIN_MAP.keys()))
+
+    if difficulty == "hard":
+        return counter_move(player_last_move)
+
+def counter_move(move):
+    for key, beats in WIN_MAP.items():
+        if move in beats:
+            return key
+    return random.choice(list(WIN_MAP.keys()))
+
+def determine_winner(player, computer):
     if player == computer:
         return "tie"
-
-    if use_advanced:
-        win_map = {
-            "rock": ["scissors", "lizard"],
-            "paper": ["rock", "spock"],
-            "scissors": ["paper", "lizard"],
-            "lizard": ["spock", "paper"],
-            "spock": ["scissors", "rock"]
-        }
-    else:
-        win_map = {
-            "rock": ["scissors"],
-            "paper": ["rock"],
-            "scissors": ["paper"]
-        }
-
-    if computer in win_map[player]:
+    if computer in WIN_MAP[player]:
         return "player"
-    else:
-        return "computer"
+    return "computer"
+
+def choose_best_of():
+    while True:
+        choice = input("Choose match length (3 / 5 / 7): ").strip()
+        if choice in {"3", "5", "7"}:
+            return int(choice)
+
+def choose_difficulty():
+    while True:
+        diff = input("Choose difficulty (easy / medium / hard): ").lower().strip()
+        if diff in {"easy", "medium", "hard"}:
+            return diff
 
 def play_game():
-    print("Welcome to Rock-Paper-Scissors!")
-    mode = input("Do you want basic or advanced mode? (basic/advanced): ").lower()
+    print("\nWelcome to Rock Paper Scissors\n")
 
-    if mode == "advanced":
-        choices = advanced_choices
-        use_advanced = True
-        print("Advanced mode selected: Rock, Paper, Scissors, Lizard, Spock!")
-    else:
-        choices = basic_choices
-        use_advanced = False
-        print("Basic mode selected: Rock, Paper, Scissors!")
+    best_of = choose_best_of()
+    difficulty = choose_difficulty()
 
-    rounds_played = 0
+    wins_needed = best_of // 2 + 1
     player_score = 0
     computer_score = 0
+    round_number = 1
+    last_player_move = None
 
-    while True:
-        print("\n--- Round", rounds_played + 1, "---")
-        player_choice = input(
-            f"Choose {', '.join(choices)} (or 'quit' to exit): "
-        ).lower()
+    print(f"\nFirst to {wins_needed} wins. Difficulty: {difficulty.capitalize()}\n")
 
-        if player_choice == "quit":
-            print("Exiting game...")
-            break
+    while player_score < wins_needed and computer_score < wins_needed:
+        print(f"Round {round_number}")
+        player_raw = input("Your move (r/p/s or rock/paper/scissors): ")
+        player_move = normalize_input(player_raw)
 
-        if player_choice not in choices:
-            print("Invalid choice, try again!")
+        if not player_move:
+            print("Invalid input. Try again.\n")
             continue
 
-        computer_choice = random.choice(choices)
-        print(f"Computer chose: {computer_choice}")
+        computer_move = get_computer_choice(difficulty, last_player_move)
+        last_player_move = player_move
+
+        print(f"You chose: {player_move}")
+        print(f"Computer chose: {computer_move}")
         time.sleep(0.5)
 
-        result = determine_winner(player_choice, computer_choice, use_advanced)
+        result = determine_winner(player_move, computer_move)
 
         if result == "tie":
-            print("It's a tie!")
+            print("It's a tie.\n")
         elif result == "player":
-            print("You win this round!")
             player_score += 1
+            print("You win this round.\n")
         else:
-            print("Computer wins this round!")
             computer_score += 1
+            print("Computer wins this round.\n")
 
-        rounds_played += 1
-        print(f"Score -> You: {player_score} | Computer: {computer_score}")
+        print(f"Score — You: {player_score} | Computer: {computer_score}\n")
+        round_number += 1
 
-        if rounds_played % 3 == 0:
-            cont = input("Do you want to continue playing? (yes/no): ").lower()
-            if cont != "yes":
-                break
-
-    print("\n--- Game Over ---")
-    print(f"Total rounds played: {rounds_played}")
-    print(f"Your score: {player_score}")
-    print(f"Computer score: {computer_score}")
-
+    print("Match over.")
     if player_score > computer_score:
-        print("You won the game! Congrats!")
-    elif player_score < computer_score:
-        print("Computer won the game! Better luck next time!")
+        print("You won the match. Well played.")
     else:
-        print("The game ended in a tie!")
+        print("Computer wins the match. Learn from it.")
 
 if __name__ == "__main__":
     play_game()
